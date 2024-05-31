@@ -115,10 +115,14 @@ class Main(QtWidgets.QWidget):
         self.tab = self.ui.tabWidget
 
     def storehouse_show_data(self):
-        show_query = "SELECT k.ma_sach, k.ten, SUM(nk.so_luong) - SUM(xk.so_luong) \
-                        FROM kho k left join nhapkho nk on k.ma_sach = nk.ma_sach \
-                        left JOIN xuatkho xk ON nk.ma_sach = xk.ma_sach \
-                        GROUP BY  k.ma_sach, k.ten;"
+        show_query = "SELECT\
+                        s.ma_sach, s.ten,\
+                        COALESCE(SUM(nk.so_luong), 0) - COALESCE(SUM(xk.so_luong), 0)\
+                    FROM sach s\
+                        left join nhapkho nk on s.ma_sach = nk.ma_sach\
+                        left JOIN xuatkho xk ON nk.ma_sach = xk.ma_sach\
+                    GROUP BY \
+                        s.ma_sach, s.ten;"
         table_data = self.conn.execute_query(show_query)
         if len(table_data) > 0:
             table_data_new = []
@@ -468,10 +472,3 @@ class Main(QtWidgets.QWidget):
             event.accept()
         else:
             event.ignore()
-
-
-if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    window = Main()
-    window.show()
-    sys.exit(app.exec())
